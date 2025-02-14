@@ -1,3 +1,4 @@
+import { omit } from "lodash";
 import { supabase } from "../lib/supabase";
 import { Block } from "@/types/swimlane";
 
@@ -22,9 +23,11 @@ export async function createTask(task: Block) {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
+  const trimmedTask = omit(task, "id");
+
   const { data, error } = await supabase.from("tasks").insert([
     {
-      ...task,
+      ...trimmedTask,
       created_by: user.id,
       updated_by: user.id,
     },
