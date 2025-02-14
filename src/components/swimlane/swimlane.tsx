@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Block, Lane, SwimlaneConfig } from "@/types/swimlane";
+import { Block, Lane, SwimlaneConfig, Transition } from "@/types/swimlane";
 import { BlockCard } from "./block-card";
 import { BlockPreview } from "./block-preview";
 import { TransitionForm } from "./transition-form";
@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/design-system/button";
 import { Plus } from "lucide-react";
 import { TaskForm } from "./task-form";
+import { v4 as uuid } from "uuid";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useCreateTask, useGetTasks, useUpdateTask } from "@/api/swimlane";
@@ -97,9 +98,23 @@ export function Swimlane({ config }: SwimlaneProps) {
   const onTransitionSubmitHandler = (data: Record<string, string>) => {
     if (!transitionBlock) return;
 
+    console.log("Transition data", transitionBlock);
+
+    const transitions: Transition[] = [
+      ...(transitionBlock?.block?.transitions || []),
+      {
+        id: uuid(),
+        timestamp: new Date().toISOString(),
+        fromState: transitionBlock.fromState,
+        toState: transitionBlock.toState,
+        data: typeof data === "object" && data !== null ? data : {},
+      },
+    ];
+
     updateTask({
       ...transitionBlock.block,
       state: transitionBlock.toState,
+      transitions,
       ...data,
     });
   };
@@ -265,7 +280,10 @@ export function Swimlane({ config }: SwimlaneProps) {
 
       <TaskForm
         open={isTaskModal}
-        onOpenChange={setIsTaskModal}
+        onOpenChange={(e) => {
+          setIsTaskModal(e);
+          setBlockToEdit(null);
+        }}
         onSubmit={onFormSubmitHandler}
         lanes={config.lanes}
         initialData={blockToEdit}

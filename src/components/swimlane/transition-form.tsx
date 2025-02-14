@@ -15,13 +15,7 @@ import {
 import { Button } from "@/design-system/button";
 import { Lane } from "@/types/swimlane";
 import { useState } from "react";
-
-const TransitionTypeNameMapping = {
-  todo: "To-Do",
-  in_progress: "In Progress",
-  review: "Review",
-  done: "Done",
-};
+import { getFormattedTaskLabel } from "@/helperMethods/task";
 
 interface TransitionFormProps {
   fromState: string;
@@ -45,21 +39,13 @@ export function TransitionForm({
     onSubmit(formData);
   };
 
-  const formattedFromState =
-    TransitionTypeNameMapping[
-      fromState as keyof typeof TransitionTypeNameMapping
-    ];
-  const formattedToState =
-    TransitionTypeNameMapping[
-      toState as keyof typeof TransitionTypeNameMapping
-    ];
-
   return (
     <Dialog open={true} onOpenChange={() => onCancel()}>
       <DialogContent className="max-w-sm sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">
-            Move from {formattedFromState} to {formattedToState}
+            Move from {getFormattedTaskLabel(fromState)} to{" "}
+            {getFormattedTaskLabel(toState)}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
